@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useStore } from "@/lib/store";
+import { getSupabaseConfigProblem } from "@/lib/supabase";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { configured, userEmail, authLoaded, ready, signIn, signUp, busy, localCount, importLocal, signOut, notify } = useStore();
@@ -11,10 +12,12 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
 
+  const configProblem = getSupabaseConfigProblem();
   if (!configured) return (
     <section className="surface-card mx-auto max-w-xl p-8">
       <h1 className="text-2xl font-bold">Cloud setup required</h1>
-      <p className="mt-3 text-sm">Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in Vercel project environment settings, then redeploy. Your old browser records are still stored locally and can be imported after setup.</p>
+      <p className="mt-3 text-sm">{configProblem ?? "Add the Supabase project URL and publishable key in Vercel project environment settings."}</p>
+      <p className="mt-3 text-sm text-muted-ink">Update the values in Vercel Environment Variables and redeploy this branch. Your existing browser records are not affected.</p>
     </section>
   );
   if (!authLoaded) return <p className="text-sm text-muted-ink">Checking your session...</p>;
