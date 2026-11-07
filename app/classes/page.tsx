@@ -56,25 +56,31 @@ export default function ClassesPage() {
       });
   }, [lessons, search, filter, order]);
 
-  function saveLesson(input: LessonInput) {
-    if (editing) { editLesson(editing.id, input); notify("Class updated successfully."); }
-    else { addLesson(input); notify("New class added! Nice work."); setCelebrate(true); }
-    setModalOpen(false);
-    setEditing(null);
+  async function saveLesson(input: LessonInput) {
+    try {
+      if (editing) { await editLesson(editing.id, input); notify("Class updated successfully."); }
+      else { await addLesson(input); notify("New class added! Nice work."); setCelebrate(true); }
+      setModalOpen(false);
+      setEditing(null);
+    } catch { notify("Class could not be saved. Please retry."); }
   }
-  function paymentChange(lesson: Lesson) {
-    togglePaid(lesson.id);
-    if (!lesson.paid) setCelebrate(true);
-    notify(lesson.paid ? "Marked as unpaid." : "Payment received — hooray!");
+  async function paymentChange(lesson: Lesson) {
+    try {
+      await togglePaid(lesson.id);
+      if (!lesson.paid) setCelebrate(true);
+      notify(lesson.paid ? "Marked as unpaid." : "Payment received — hooray!");
+    } catch { notify("Could not update payment status."); }
   }
-  function rateSave(event: React.FormEvent<HTMLFormElement>) {
+  async function rateSave(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const number = Number(rateDraft);
     if (rateDraft.trim() === "" || !Number.isFinite(number) || number < 0 || number > 100000) { setRateError("Enter a valid rate (0 or higher)."); return; }
-    setDefaultRate(number);
-    setRateSettingsOpen(false);
-    setRateError("");
-    notify("Your default hourly rate has been updated.");
+    try {
+      await setDefaultRate(number);
+      setRateSettingsOpen(false);
+      setRateError("");
+      notify("Your default hourly rate has been updated.");
+    } catch { setRateError("Unable to save rate to the cloud."); }
   }
   function openEdit(lesson: Lesson) { setEditing(lesson); setModalOpen(true); }
   function openNew() { setEditing(null); setModalOpen(true); }
@@ -115,7 +121,7 @@ export default function ClassesPage() {
 
       <LessonModal open={modalOpen} lesson={editing} defaultRate={defaultRate} onClose={() => { setModalOpen(false); setEditing(null); }} onSave={saveLesson} />
 
-      <AnimatePresence>{toDelete && <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(e) => { if (e.target === e.currentTarget) setToDelete(null); }}><motion.div role="alertdialog" aria-modal="true" aria-labelledby="confirm-delete-heading" aria-describedby="confirm-delete-desc" initial={{ opacity: 0, scale: .97, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: .97 }} className="modal-panel !max-w-[420px]"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600"><Trash2 size={22} /></span><h2 id="confirm-delete-heading" className="mt-4 text-xl font-extrabold">Delete this class?</h2><p id="confirm-delete-desc" className="mt-2 text-sm leading-6 text-muted-ink">“{toDelete.topic}” will be permanently removed from this browser, including its payment record.</p><div className="mt-6 flex justify-end gap-2"><button autoFocus className="button-secondary" onClick={() => setToDelete(null)}>Keep class</button><button className="button-danger" onClick={() => { removeLesson(toDelete.id); setToDelete(null); notify("Class deleted."); }}>Delete class</button></div></motion.div></motion.div>}</AnimatePresence>
+      <AnimatePresence>{toDelete && <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(e) => { if (e.target === e.currentTarget) setToDelete(null); }}><motion.div role="alertdialog" aria-modal="true" aria-labelledby="confirm-delete-heading" aria-describedby="confirm-delete-desc" initial={{ opacity: 0, scale: .97, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: .97 }} className="modal-panel !max-w-[420px]"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600"><Trash2 size={22} /></span><h2 id="confirm-delete-heading" className="mt-4 text-xl font-extrabold">Delete this class?</h2><p id="confirm-delete-desc" className="mt-2 text-sm leading-6 text-muted-ink">“{toDelete.topic}” will be permanently removed from your cloud account, including its payment record.</p><div className="mt-6 flex justify-end gap-2"><button autoFocus className="button-secondary" onClick={() => setToDelete(null)}>Keep class</button><button className="button-danger" onClick={async () => { try { await removeLesson(toDelete.id); setToDelete(null); notify("Class deleted."); } catch { notify("Could not delete class."); } }}>Delete class</button></div></motion.div></motion.div>}</AnimatePresence>
     </div>
   );
 }
