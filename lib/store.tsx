@@ -11,6 +11,7 @@ const STORAGE_KEY = "classnest:data:v1";
 type PersistedData = { lessons: Lesson[]; defaultRate: number };
 type Store = PersistedData & {
   ready: boolean;
+  authLoaded: boolean;
   configured: boolean;
   userEmail: string | null;
   busy: boolean;
@@ -78,6 +79,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [defaultRate, setDefaultRateState] = useState(50);
   const [ready, setReady] = useState(false);
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [localCount, setLocalCount] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
@@ -100,7 +102,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!supabase) { setReady(true); return; }
+    if (!supabase) { setReady(true); setAuthLoaded(true); return; }
     let active = true;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
@@ -109,7 +111,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     void supabase.auth.getUser().then(({ data, error }) => {
       if (active && !error) setUser(data.user);
       if (active && error) notify(error.message);
-    });
+    }).finally(() => { if (active) setAuthLoaded(true); });
     return () => { active = false; subscription.unsubscribe(); };
   }, [supabase, notify]);
 
@@ -253,7 +255,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }
 
   const value: Store = {
-    lessons, defaultRate, ready, configured: !!supabase, userEmail: user?.email ?? null,
+    lessons, defaultRate, ready, authLoaded, configured: !!supabase, userEmail: user?.email ?? null,
     busy, localCount, signIn, signUp, signOut, importLocal,
     addLesson, editLesson, removeLesson, togglePaid, setDefaultRate, notify, toast,
   };
