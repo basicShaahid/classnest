@@ -47,7 +47,7 @@ The site should now run at **http://localhost:3000** using the production build.
 3. Vercel detects Next.js automatically. Keep the defaults and click **Deploy**.
 4. Open the deployment URL after it finishes.
 
-No environment variables or API keys are required.
+Cloud sync requires Supabase environment variables. See the cloud sync setup section below.
 
 **Important storage limitation:** This version uses **browser localStorage**, not a cloud database. Each browser/device has its own separate data. Deploying to Vercel does not sync records between your phone and laptop. Clearing browser site data or using private browsing can erase the records. **Export a CSV backup regularly.** A future release could replace `lib/store.tsx`'s persistence with Supabase and add a login.
 
@@ -106,3 +106,17 @@ The UI prevents blank topics, invalid dates, negative rates, and end times at or
 ## Important note about verification
 
 This project was authored in an environment without access to the npm registry, so dependency installation and a real `next build` could not be executed there. Please run `npm install && npm run build` on your machine or in Vercel to verify the build with installed dependencies.
+
+
+## Cloud sync setup (feature/supabase-sync)
+
+1. In Supabase, create a project and open **SQL Editor**. Paste and run `supabase/schema.sql` once on a new project. This enables user-specific row-level security.
+2. In **Authentication → Providers**, enable Email authentication. Use confirmation emails for new sign-ups.
+3. In Supabase **Connect**, copy the project URL and **publishable** key. Create `.env.local` locally based on `.env.example`. Never use your database password, secret, or service-role key in any NEXT_PUBLIC variable.
+4. Run `npm install` to install `@supabase/supabase-js` and update package-lock.json. Commit that lockfile update before deploying (CI environments using `npm ci` require the updated lockfile).
+5. In Vercel **Project → Settings → Environment Variables**, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; redeploy after setting them.
+6. Set the allowed Site URL in **Supabase Authentication → URL Configuration** to your Vercel production URL, and add localhost for local development.
+7. Sign up or sign in. On the **same browser** that contains your old lessons, use **Import browser classes**. It inserts missing class IDs only, does not overwrite cloud records, and retains the local backup.
+8. Sign in with the same account on your phone or another browser to see the same records. Returning to the tab automatically refreshes data.
+
+Notes: This branch is not yet live. It needs the Supabase project configuration, updated lockfile, and a build/test run before merging. The sample lesson is not automatically loaded into new cloud accounts. Existing browser data remains untouched.
