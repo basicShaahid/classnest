@@ -116,7 +116,7 @@ This project was authored in an environment without access to the npm registry, 
 4. Run `npm install` to install `@supabase/supabase-js` and update package-lock.json. Commit that lockfile update before deploying (CI environments using `npm ci` require the updated lockfile).
 5. In Vercel **Project → Settings → Environment Variables**, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; redeploy after setting them.
 6. Set the allowed Site URL in **Supabase Authentication → URL Configuration** to your Vercel production URL, and add localhost for local development.
-7. Sign up or sign in. On the **same browser** that contains your old lessons, use **Import browser classes**. It inserts missing class IDs only, does not overwrite cloud records, and retains the local backup.
+7. Sign up or sign in. **Do not try to import existing data on a Vercel Preview URL**: browser localStorage belongs to each exact origin. After the integration is tested and deployed on `https://classnest-three.vercel.app`, visit that original site **in the same browser/profile where your older data was saved**, then use **Import browser classes**. It inserts missing class IDs only, does not overwrite cloud records, and retains the local backup.
 8. Sign in with the same account on your phone or another browser to see the same records. Returning to the tab automatically refreshes data.
 
 Notes: This branch is not yet live. It needs the Supabase project configuration, updated lockfile, and a build/test run before merging. The sample lesson is not automatically loaded into new cloud accounts. Existing browser data remains untouched.
