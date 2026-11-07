@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { BookOpenCheck, CheckCircle2, LayoutDashboard, ListTodo, ShieldCheck } from "lucide-react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useStore } from "@/lib/store";
+import { AuthGate } from "@/components/AuthGate";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -25,10 +26,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="relative mx-auto w-full max-w-6xl px-5 pb-16 pt-9 sm:px-8 sm:pt-12">{children}</main>
+      <main className="relative mx-auto w-full max-w-6xl px-5 pb-16 pt-9 sm:px-8 sm:pt-12"><AuthGate>{children}</AuthGate></main>
       <footer className="mx-auto flex max-w-6xl flex-col justify-between gap-2 border-t border-[#e6e9dc] px-5 py-6 text-xs text-muted-ink sm:flex-row sm:px-8">
         <span>Made for your little wins, one lesson at a time.</span>
-        <span className="flex items-center gap-1.5"><ShieldCheck size={14} /> Saved privately in this browser</span>
+        <span className="flex items-center gap-1.5"><ShieldCheck size={14} /> Private cloud sync for signed-in users</span>
       </footer>
       <AnimatePresence>
         {toast && <motion.div key={toast} initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8 }} role="status" aria-live="polite" className="fixed bottom-6 left-1/2 z-[100] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-2xl bg-ink px-5 py-3.5 text-sm font-semibold text-white shadow-2xl"><CheckCircle2 size={19} className="text-[#b9dea9]" /> {toast}</motion.div>}
