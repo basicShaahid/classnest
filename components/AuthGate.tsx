@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useStore } from "@/lib/store";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { configured, userEmail, ready, signIn, signUp, busy, localCount, importLocal, signOut, notify } = useStore();
+  const { configured, userEmail, authLoaded, ready, signIn, signUp, busy, localCount, importLocal, signOut, notify } = useStore();
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,6 +17,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       <p className="mt-3 text-sm">Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in Vercel project environment settings, then redeploy. Your old browser records are still stored locally and can be imported after setup.</p>
     </section>
   );
+  if (!authLoaded) return <p className="text-sm text-muted-ink">Checking your session...</p>;
   if (!userEmail) return (
     <section className="surface-card mx-auto max-w-md p-7">
       <h1 className="text-2xl font-bold">{mode === "signIn" ? "Sign in to ClassNest" : "Create your ClassNest account"}</h1>
